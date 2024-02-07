@@ -1,4 +1,5 @@
-﻿using CodingWiki_Model.Models;
+﻿using CodingWiki_DataAccess.FluentConfig;
+using CodingWiki_Model.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -17,13 +18,31 @@ namespace CodingWiki_DataAccess.Data
         public DbSet<SubCategory> SubCategories { get; set; }
         public DbSet<BookDetail> BookDetails { get; set; }
 
+        //rename BooDtails
+        public DbSet<Fluent_BookDetail> BookDetails_Fluent { get; set; }
+        public DbSet<Fluent_Book> Fluent_Books { get; set; }
+
+        public ApplicationDbContext (DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder context)
         {
-            context.UseSqlServer("Server=OB-IT-23; Database=BooksManagement; Encrypt=false; TrustServerCertificate=true; User Id = sa");
+           // context.UseSqlServer("Server=OB-IT-23; Database=BooksManagement; Encrypt=false; TrustServerCertificate=true; User Id = sa");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+           // modelBuilder.Entity<BookAuthorMap>().HasKey(u => new {u.Author_Id, u.Book_Id});
+            modelBuilder.ApplyConfiguration(new FluentAuthorConfig());
+            modelBuilder.ApplyConfiguration(new FluentBookConfig());
+            modelBuilder.ApplyConfiguration(new FluentBookDetailConfig());
+            modelBuilder.ApplyConfiguration(new FluentPublisherConfig());
+            modelBuilder.ApplyConfiguration(new FluentSubCategoryConfig());
+           
+            
+
             modelBuilder.Entity<Book>().HasData(
                 new Book { BookId = 1, Title = "Spider without Duty", ISBN = "123812", Price = (double)10.99m , Publisher_Id = 1 },
                 new Book { BookId = 2, Title = "Fortune of Time", ISBN = "12113822", Price = (double)11.99m , Publisher_Id = 2 }
