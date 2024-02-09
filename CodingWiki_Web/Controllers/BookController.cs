@@ -1,6 +1,8 @@
 ﻿using CodingWiki_DataAccess.Data;
 using CodingWiki_Model.Models;
+using CodingWiki_Model.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace CodingWiki_Web.Controllers
@@ -20,15 +22,22 @@ namespace CodingWiki_Web.Controllers
         }
 
         public IActionResult Upsert(int? id)
-        {
-            Book buk = new();
-            if (id == null)
+        { 
+            BookVM buk = new();
+
+            buk.PublisherList = _db.Publishers.Select(i => new SelectListItem
+            {
+                Text = i.Name,
+                Value = i.Publisher_Id.ToString()
+            }); ;
+ 
+            if (id == null || id == 0)
             {
                 return View(buk);
             }
             else
             {
-                buk = _db.Books.FirstOrDefault(u => u.BookId  == id);
+                buk.Book = _db.Books.FirstOrDefault(u => u.BookId  == id);
                  return View(buk);
             }
             
@@ -36,18 +45,18 @@ namespace CodingWiki_Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upsert(Book obj)
+        public async Task<IActionResult> Upsert(BookVM obj)
         {
            
             if (ModelState.IsValid)
             {
-                if (obj.BookId == 0)
+                if (obj.Book.BookId == 0)
                 {
-                    await _db.Books.AddAsync(obj);
+                    await _db.Books.AddAsync(obj.Book);
                 }
                 else
                 {
-                    _db.Books.Update(obj);
+                    _db.Books.Update(obj.Book);
                 }
                 await _db.SaveChangesAsync();
 
